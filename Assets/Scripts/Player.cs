@@ -3,7 +3,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
 {
     private Rigidbody rb;
     public Camera Camera;
@@ -15,7 +15,11 @@ public class Player : MonoBehaviour
     private float smoothMovementIntensity = 0f;
     private Vector3 camShake = Vector3.zero;
     private Vector3 smoothCamShake = Vector3.zero;
+    private Vector3 weaponShake = Vector3.zero;
+    private Vector3 smoothWeaponShake = Vector3.zero;
     private float inputDistance = 0f;
+    private float SmoothDeltaX = 0f;
+    private float SmoothDeltaY = 0f;
 
 
     public float Sensitivity = 2f;
@@ -26,7 +30,14 @@ public class Player : MonoBehaviour
     public float CameraFollowSpeed = 0.75f;
     public float walkWobbleSpeed = 25f;
     public float walkWobbleIntensity = 5f;
-    public float camShakeSpeed = 0.2f;
+    public float camShakeDamping = 0.15f;
+    public float MouseDeltaCap = 8;
+    public float SmoothMouseDelta = 0.12f;
+    public Transform WeaponHolder;
+    public float weaponShakeDamping = 0.15f;
+    public float weaponWobbleIntensity = 0.04f;
+    public float weaponLowerIntensity = 0.2f;
+    public Vector3 DefaultWeaponOffset = new Vector3(0.5f, -0.5f, 1f);
 
     
     void Start()
@@ -40,9 +51,17 @@ public class Player : MonoBehaviour
     {
 
         inputDistance = math.sqrt(Input.GetAxis("Vertical") * Input.GetAxis("Vertical") + Input.GetAxis("Horizontal") * Input.GetAxis("Horizontal"));
-        smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, Mathf.Clamp(inputDistance, 0f, 1f), Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
+        
+        //mouse input
+        Vector2 MouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
         xRotation += Input.GetAxis("Mouse X")*Sensitivity;
         yRotation = math.clamp(yRotation-Input.GetAxis("Mouse Y")*Sensitivity, -75f, 75f);
+
+        float CappedDeltaX = Mathf.Clamp(MouseDelta.x, -MouseDeltaCap,MouseDeltaCap);
+        float CappedDeltaY = Mathf.Clamp(MouseDelta.y, -MouseDeltaCap,MouseDeltaCap);
+        SmoothDeltaX -= ( SmoothDeltaX - CappedDeltaX ) * (SmoothMouseDelta*(Time.deltaTime*60));
+        SmoothDeltaY -= ( SmoothDeltaY - CappedDeltaY ) * (SmoothMouseDelta*(Time.deltaTime*60));
+
         transform.rotation = Quaternion.Euler(0, xRotation, 0f);
 
         CameraFollowHeight = CameraFollowHeight - ( CameraFollowHeight - (transform.position.y + 0.6f) ) / CameraFollowSpeed*(Time.deltaTime*60);
@@ -51,6 +70,7 @@ public class Player : MonoBehaviour
             if (isGrounded == false)
             {
                 camShake += new Vector3(5,0,0);
+                weaponShake += new Vector3(0,-0.2f,0);
             }
             isGrounded = true;
         }
@@ -61,21 +81,35 @@ public class Player : MonoBehaviour
         
         if (isGrounded)
         {
+            smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, Mathf.Clamp(inputDistance, 0f, 1f), Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
             walkWobbleTime += smoothMovementIntensity*(Time.deltaTime*60);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 camShake += new Vector3(-5,0,0);
+                weaponShake += new Vector3(0,-0.2f,0);
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x*JumpMovementBoost, rb.linearVelocity.y+JumpPower, rb.linearVelocity.z*JumpMovementBoost);
             }
         }
+        else
+        {
+            smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, 0, Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
+        }
         float walkWobbleX = Mathf.Sin(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
         float walkWobbleY =  Mathf.Sin(walkWobbleTime * walkWobbleSpeed*2) * smoothMovementIntensity;
+        float walkWobbleX2 = Mathf.Cos(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
 
-        camShake = Vector3.Lerp(camShake, Vector3.zero, Mathf.Clamp(camShakeSpeed*(Time.deltaTime*60), 0f, 1f));
-        smoothCamShake = Vector3.Lerp(smoothCamShake, camShake, Mathf.Clamp(camShakeSpeed*(Time.deltaTime*60), 0f, 1f));
+        camShake = Vector3.Lerp(camShake, Vector3.zero, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
+        smoothCamShake = Vector3.Lerp(smoothCamShake, camShake, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
+        weaponShake = Vector3.Lerp(weaponShake, Vector3.zero, Mathf.Clamp(weaponShakeDamping*(Time.deltaTime*60), 0f, 1f));
+        smoothWeaponShake = Vector3.Lerp(smoothWeaponShake, weaponShake, Mathf.Clamp(weaponShakeDamping*(Time.deltaTime*60), 0f, 1f));
 
         Camera.transform.position = new Vector3(Camera.transform.position.x, CameraFollowHeight, Camera.transform.position.z);
         Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x, (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
+    
+        Vector3 weaponOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity,-smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity,0) + smoothWeaponShake;
+        WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
+        WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(DefaultWeaponOffset.z+weaponOffsetPosition.z)) + (WeaponHolder.transform.up*(DefaultWeaponOffset.y+weaponOffsetPosition.y)) + (WeaponHolder.transform.right*(DefaultWeaponOffset.x+weaponOffsetPosition.x));
+        WeaponHolder.transform.rotation *= quaternion.Euler(0,SmoothDeltaX*1.5f,0);;
     }
 
     void FixedUpdate()
