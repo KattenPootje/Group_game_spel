@@ -1251,10 +1251,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   Camera: {fileID: 330585545}
   Sensitivity: 2
-  WalkSpeed: 35
+  WalkSpeed: 30
+  SprintSpeedMultiplier: 0.4
   JumpPower: 4
   Friction: 0.2
   JumpMovementBoost: 1.5
+  useSprintToggle: 1
+  sprintTransitionSpeed: 0.05
   CameraFollowSpeed: 3
   walkWobbleSpeed: 0.15
   walkWobbleIntensity: 0.6
@@ -1265,7 +1268,10 @@ MonoBehaviour:
   weaponShakeDamping: 0.175
   weaponWobbleIntensity: 0.04
   weaponLowerIntensity: 0.1
-  DefaultWeaponOffset: {x: 0.32, y: -0.32, z: 0.54}
+  DefaultWeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
+  DefaultWeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
+  SprintWeaponOffsetPosition: {x: 0, y: -0.7, z: 1}
+  SprintWeaponOffsetRotation: {x: -0.08405186, y: 0.2328421, z: -0.19507611, w: -0.9490338}
 --- !u!136 &858238474
 CapsuleCollider:
   m_ObjectHideFlags: 0

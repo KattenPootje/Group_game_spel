@@ -20,13 +20,18 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
     private float inputDistance = 0f;
     private float SmoothDeltaX = 0f;
     private float SmoothDeltaY = 0f;
+    private bool sprinting = false;
+    private float sprintingAnimation = 0f;
 
 
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
+    public float SprintSpeedMultiplier = 1.5f;
     public float JumpPower = 15f;
     public float Friction = 0.5f;
     public float JumpMovementBoost = 1.25f;
+    public bool useSprintToggle = true;
+    public float sprintTransitionSpeed = 0.1f;
     public float CameraFollowSpeed = 0.75f;
     public float walkWobbleSpeed = 25f;
     public float walkWobbleIntensity = 5f;
@@ -37,7 +42,10 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
     public float weaponShakeDamping = 0.15f;
     public float weaponWobbleIntensity = 0.04f;
     public float weaponLowerIntensity = 0.2f;
-    public Vector3 DefaultWeaponOffset = new Vector3(0.5f, -0.5f, 1f);
+    public Vector3 DefaultWeaponOffsetPosition = new Vector3(0.5f, -0.5f, 1f);
+    public Quaternion DefaultWeaponOffsetRotation = Quaternion.Euler(0f, 0f, 0f);
+    public Vector3 SprintWeaponOffsetPosition = new Vector3(0.5f, -0.8f, 1f);
+    public Quaternion SprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
 
     
     void Start()
@@ -52,6 +60,7 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
 
         inputDistance = math.sqrt(Input.GetAxis("Vertical") * Input.GetAxis("Vertical") + Input.GetAxis("Horizontal") * Input.GetAxis("Horizontal"));
         
+
         //mouse input
         Vector2 MouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
         xRotation += Input.GetAxis("Mouse X")*Sensitivity;
@@ -77,6 +86,41 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
         else
         {
             isGrounded = false;
+        }
+
+        if (useSprintToggle == true)
+        {
+            if (Input.GetKeyDown(KeyCode.LeftShift))
+            {
+                if (sprinting == true)
+                {
+                    sprinting = false;
+                }
+                else
+                {
+                    sprinting = true;
+                }
+            }
+        }
+        else
+        {
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                sprinting = true;
+            }
+            else
+            {
+                sprinting = false;
+            }
+                
+        }
+        if (sprinting == true && isGrounded == true && inputDistance == 1)
+        {
+            sprintingAnimation = Mathf.Clamp(sprintingAnimation + (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
+        }
+        else
+        {
+            sprintingAnimation = Mathf.Clamp(sprintingAnimation - (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
         }
         
         if (isGrounded)
@@ -106,10 +150,10 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
         Camera.transform.position = new Vector3(Camera.transform.position.x, CameraFollowHeight, Camera.transform.position.z);
         Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x, (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
     
-        Vector3 weaponOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity,-smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity,0) + smoothWeaponShake;
+        Vector3 weaponOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),-smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),0) + smoothWeaponShake;
         WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
-        WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(DefaultWeaponOffset.z+weaponOffsetPosition.z)) + (WeaponHolder.transform.up*(DefaultWeaponOffset.y+weaponOffsetPosition.y)) + (WeaponHolder.transform.right*(DefaultWeaponOffset.x+weaponOffsetPosition.x));
-        WeaponHolder.transform.rotation *= quaternion.Euler(0,SmoothDeltaX*1.5f,0);;
+        WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(Mathf.Lerp(DefaultWeaponOffsetPosition.z, SprintWeaponOffsetPosition.z, sprintingAnimation)+weaponOffsetPosition.z)) + (WeaponHolder.transform.up*(Mathf.Lerp(DefaultWeaponOffsetPosition.y, SprintWeaponOffsetPosition.y, sprintingAnimation)+weaponOffsetPosition.y)) + (WeaponHolder.transform.right*(Mathf.Lerp(DefaultWeaponOffsetPosition.x, SprintWeaponOffsetPosition.x, sprintingAnimation)+weaponOffsetPosition.x));
+        WeaponHolder.transform.rotation *= quaternion.Euler(0,SmoothDeltaX*1.5f,0)*Quaternion.Lerp(DefaultWeaponOffsetRotation, SprintWeaponOffsetRotation, sprintingAnimation);
     }
 
     void FixedUpdate()
@@ -118,7 +162,7 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
             {
                 if (inputDistance > 0)
                 {
-                    rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed);
+                    rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
                     
                 }
                 rb.linearVelocity = new Vector3(rb.linearVelocity.x / (1+(Friction)), rb.linearVelocity.y, rb.linearVelocity.z / (1+(Friction)));
