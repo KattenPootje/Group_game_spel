@@ -27,6 +27,7 @@ public class Player : MonoBehaviour
     public float walkWobbleSpeed = 25f;
     public float walkWobbleIntensity = 5f;
     public float camShakeSpeed = 0.2f;
+    public float Health = 100f;
 
     
     void Start()

@@ -406,7 +406,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &552291879
 MeshFilter:
@@ -486,14 +485,14 @@ Light:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 794452110}
   m_Enabled: 1
-  serializedVersion: 13
+  serializedVersion: 11
   m_Type: 1
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
-  m_CookieSize2D: {x: 10, y: 10}
+  m_CookieSize: 10
   m_Shadows:
     m_Type: 2
     m_Resolution: -1
@@ -538,7 +537,7 @@ Light:
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ForceVisible: 0
-  m_ShapeRadius: 0
+  m_ShadowRadius: 0
   m_ShadowAngle: 0
   m_LightUnit: 1
   m_LuxAtDistance: 1
@@ -702,7 +701,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!33 &858238471
 MeshFilter:
@@ -750,7 +748,6 @@ MonoBehaviour:
   walkWobbleSpeed: 0.15
   walkWobbleIntensity: 0.6
   camShakeSpeed: 0.15
-  Health: 100
 --- !u!136 &858238474
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -799,7 +796,7 @@ Transform:
   m_GameObject: {fileID: 1359150079}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 1.21487, y: 0.28603, z: -0.46239}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -875,6 +872,7 @@ MonoBehaviour:
   - {fileID: 296010741}
   - {fileID: 338975025}
   - {fileID: 1953489940}
+  target: {fileID: 858238467}
   cubesPerWave: 5
   timeBetweenWaves: 5
 --- !u!4 &1789921732
@@ -886,7 +884,7 @@ Transform:
   m_GameObject: {fileID: 1789921730}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 0}
+  m_LocalPosition: {x: 1.28038, y: -0, z: -0.95808}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
