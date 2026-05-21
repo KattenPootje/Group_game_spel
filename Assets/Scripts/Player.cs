@@ -1,12 +1,14 @@
 using System;
+using Mono.Cecil.Cil;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
 
-public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
+public class Player : MonoBehaviour 
 {
     private Rigidbody rb;
     public Camera Camera;
+    public Arsenal Arsenal;
     private float xRotation = 0f;
     private float yRotation = 0f;
     private bool isGrounded = false;
@@ -22,6 +24,7 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
     private float SmoothDeltaY = 0f;
     private bool sprinting = false;
     private float sprintingAnimation = 0f;
+    private int CurrentWeapon = 0;
 
 
     public float Sensitivity = 2f;
@@ -57,6 +60,7 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
 
     void Update()
     {
+        Debug.Log(Arsenal.Items[0].name);
 
         inputDistance = math.sqrt(Input.GetAxis("Vertical") * Input.GetAxis("Vertical") + Input.GetAxis("Horizontal") * Input.GetAxis("Horizontal"));
         
@@ -126,7 +130,7 @@ public class Player : MonoBehaviour //kut kjelt blijf uit me kanker code
         if (isGrounded)
         {
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, Mathf.Clamp(inputDistance, 0f, 1f), Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
-            walkWobbleTime += smoothMovementIntensity*(Time.deltaTime*60);
+            walkWobbleTime += smoothMovementIntensity*(1+SprintSpeedMultiplier*sprintingAnimation)*(Time.deltaTime*60);
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 camShake += new Vector3(-5,0,0);
