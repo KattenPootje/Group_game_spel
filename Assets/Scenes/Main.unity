@@ -773,13 +773,14 @@ MonoBehaviour:
   MouseDeltaCap: 0.2
   SmoothMouseDelta: 0.12
   WeaponHolder: {fileID: 1929570055}
+  recoilSpeed: 0.15
   weaponShakeDamping: 0.175
   weaponWobbleIntensity: 0.04
   weaponLowerIntensity: 0.1
   DefaultWeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
   DefaultWeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
-  SprintWeaponOffsetPosition: {x: 0, y: -0.7, z: 1}
-  SprintWeaponOffsetRotation: {x: -0.08405186, y: 0.2328421, z: -0.19507611, w: -0.9490338}
+  DefaultSprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
+  DefaultSprintWeaponOffsetRotation: {x: 0.09904577, y: 0.36964387, z: -0.23911761, w: -0.8923991}
 --- !u!136 &858238474
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -1026,14 +1027,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Arsenal
   Items:
   - name: Weapon1
-    type: melee
+    weaponType: melee
+    fireMode: 
+    fireRate: 150
+    recoil: 5
     damage: 50
+    WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
+    WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
+    SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
+    SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon2
-    type: gun
+    weaponType: gun
+    fireMode: semi
+    fireRate: 500
+    recoil: 5
     damage: 60
+    WeaponOffsetPosition: {x: 0.5, y: -0.8, z: 1}
+    WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
+    SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
+    SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon3
-    type: gun
+    weaponType: gun
+    fireMode: full
+    fireRate: 800
+    recoil: 5
     damage: 70
+    WeaponOffsetPosition: {x: 0.5, y: -0.8, z: 1}
+    WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
+    SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
+    SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
 --- !u!4 &1363291217
 Transform:
   m_ObjectHideFlags: 0
