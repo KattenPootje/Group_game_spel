@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Mono.Cecil.Cil;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -140,6 +139,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                 {
                     switchingWeapon = false;
                     CurrentWeapon = switchTo;
+                    firing = false;
                 }
             }
         }
@@ -151,31 +151,34 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         
 
 //sprint on/off
-        if (useSprintToggle == true)
+        if (Input.GetMouseButton(0) == false)
         {
-            if (Input.GetKeyDown(KeyCode.LeftShift))
+            if (useSprintToggle == true)
             {
-                if (sprinting == true)
+                if (Input.GetKeyDown(KeyCode.LeftShift))
                 {
-                    sprinting = false;
+                    if (sprinting == true)
+                    {
+                        sprinting = false;
+                    }
+                    else
+                    {
+                        sprinting = true;
+                    }
                 }
-                else
-                {
-                    sprinting = true;
-                }
-            }
-        }
-        else
-        {
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                sprinting = true;
             }
             else
             {
-                sprinting = false;
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    sprinting = true;
+                }
+                else
+                {
+                    sprinting = false;
+                }
+                    
             }
-                
         }
         if (sprinting == true && isGrounded == true && inputDistance > .95)
         {
@@ -211,9 +214,9 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         {
             Recoil = 0;
         }
-        smoothRecoil = smoothRecoil - ( smoothRecoil - Recoil ) * 0.45f*(Time.deltaTime*60);
+        smoothRecoil = smoothRecoil - ( smoothRecoil - Recoil ) * 0.75f*(Time.deltaTime*60);
         //second recoil to make it look better
-        smoothRecoil2 = smoothRecoil2 - ( smoothRecoil2 - Recoil ) * 0.25f*(Time.deltaTime*60);
+        smoothRecoil2 = smoothRecoil2 - ( smoothRecoil2 - Recoil ) * 0.225f*(Time.deltaTime*60);
 
 
 //setting weapon and camera position
@@ -244,7 +247,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 //weapon fire
         if (Input.GetMouseButton(0))
         {
-            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false)
+            sprinting = false;
+            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0)
             {
                 if (Arsenal.Items[CurrentWeapon].fireMode != "full")
                 {
