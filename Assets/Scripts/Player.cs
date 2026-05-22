@@ -30,6 +30,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private int CurrentWeapon = 0;
     private float Recoil = 0;
     private float smoothRecoil = 0;
+    private float smoothRecoil2 = 0;
     private float lastFire;
     private bool firing = false;
     private bool switchingWeapon = false;
@@ -211,6 +212,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             Recoil = 0;
         }
         smoothRecoil = smoothRecoil - ( smoothRecoil - Recoil ) * 0.45f*(Time.deltaTime*60);
+        //second recoil to make it look better
+        smoothRecoil2 = smoothRecoil2 - ( smoothRecoil2 - Recoil ) * 0.25f*(Time.deltaTime*60);
 
 
 //setting weapon and camera position
@@ -227,11 +230,13 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         smoothWeaponShake = Vector3.Lerp(smoothWeaponShake, weaponShake, Mathf.Clamp(weaponShakeDamping*(Time.deltaTime*60), 0f, 1f));
 
         Camera.transform.position = new Vector3(Camera.transform.position.x, CameraFollowHeight, Camera.transform.position.z);
-        Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x, (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
-        Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) - switchingAnimation*.75f,    -smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) +smoothRecoil*0.075f - switchingAnimation*1.5f,   -smoothRecoil*0.35f) + smoothWeaponShake;
+        Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x - smoothRecoil*3f+smoothRecoil2*1.5f,    (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
+        
+        //weapon position
+        Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) - switchingAnimation*.75f + Mathf.Sin(Time.time*10)*smoothRecoil2*0.15f,    -smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) +smoothRecoil*0.075f - switchingAnimation*1.5f,   -smoothRecoil*0.35f - smoothRecoil2*0.5f) + smoothWeaponShake;
         WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
         WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(WeaponOffsetPosition.z+weaponFinalOffsetPosition.z)) + (WeaponHolder.transform.up*(WeaponOffsetPosition.y+weaponFinalOffsetPosition.y)) + (WeaponHolder.transform.right*(WeaponOffsetPosition.x+weaponFinalOffsetPosition.x));
-        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
+        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f + smoothRecoil2*0.4f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
     }
 
     void FixedUpdate()
