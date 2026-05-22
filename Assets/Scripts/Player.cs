@@ -11,6 +11,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private Rigidbody rb;
     public Camera Camera;
     public Arsenal Arsenal;
+    public GameObject GenericBulletImpact;
     private float xRotation = 0f;
     private float yRotation = 0f;
     private bool isGrounded = false;
@@ -28,8 +29,12 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private float sprintingAnimation = 0f;
     private int CurrentWeapon = 0;
     private float Recoil = 0;
+    private float smoothRecoil = 0;
     private float lastFire;
     private bool firing = false;
+    private bool switchingWeapon = false;
+    private float switchingAnimation = 0f;
+    private int switchTo = 0;
 
 
     public float Sensitivity = 2f;
@@ -47,6 +52,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public float MouseDeltaCap = 8;
     public float SmoothMouseDelta = 0.12f;
     public Transform WeaponHolder;
+    public float weaponSwitchSpeed = 0.05f;
     public float recoilSpeed = 0.06f;
     public float weaponShakeDamping = 0.15f;
     public float weaponWobbleIntensity = 0.04f;
@@ -55,6 +61,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public Quaternion DefaultWeaponOffsetRotation = Quaternion.Euler(0f, 0f, 0f);
     public Vector3 DefaultSprintWeaponOffsetPosition = new Vector3(0.5f, -0.8f, 1f);
     public Quaternion DefaultSprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
+
 
     
     void Start()
@@ -67,10 +74,10 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 
     void Update()
     {
+//player input, mouse input
         inputDistance = math.sqrt(Input.GetAxis("Vertical") * Input.GetAxis("Vertical") + Input.GetAxis("Horizontal") * Input.GetAxis("Horizontal"));
         
 
-        //mouse input
         Vector2 MouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
         xRotation += Input.GetAxis("Mouse X")*Sensitivity;
         yRotation = math.clamp(yRotation-Input.GetAxis("Mouse Y")*Sensitivity, -75f, 75f);
@@ -82,9 +89,10 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 
         transform.rotation = Quaternion.Euler(0, xRotation, 0f);
 
-        CameraFollowHeight = CameraFollowHeight - ( CameraFollowHeight - (transform.position.y + 0.6f) ) / CameraFollowSpeed*(Time.deltaTime*60);
+        CameraFollowHeight = CameraFollowHeight - ( CameraFollowHeight - (transform.position.y + 0.6f) ) / CameraFollowSpeed*(Time.deltaTime*60); // smooth camera
         if (Physics.SphereCast(transform.position, 0.2f, -Vector3.up, out RaycastHit hit, (float)(rb.GetComponent<Collider>().bounds.extents.y + 0.1)))
         {
+            //player land effect
             if (isGrounded == false)
             {
                 camShake += new Vector3(5,0,0);
@@ -97,22 +105,51 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             isGrounded = false;
         }
 
+
+//weapon switching
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if ( scroll != 0f )
         {
             if ( scroll > 0 )
             {
-                CurrentWeapon ++;
+                switchTo ++;
             }
             else
             {
-                CurrentWeapon --;
+                switchTo --;
             }
-            CurrentWeapon = Mathf.Clamp(CurrentWeapon, 0, Arsenal.Items.Length-1);
-            Debug.Log(CurrentWeapon);
+            int clamped = Mathf.Clamp(switchTo, 0, Arsenal.Items.Length-1);
+            if (switchTo == clamped)
+            {
+                switchingWeapon = true;
+            }
+            switchTo = clamped;
+        }
+        Debug.Log(CurrentWeapon);
+        if (switchingWeapon == true)
+        {
+            if (switchTo == CurrentWeapon)
+            {
+                switchingWeapon = false;
+            }
+            else
+            {
+                switchingAnimation = Mathf.Clamp(switchingAnimation+weaponSwitchSpeed*(Time.deltaTime*60),  0, 1);
+                if (switchingAnimation == 1)
+                {
+                    switchingWeapon = false;
+                    CurrentWeapon = switchTo;
+                }
+            }
+        }
+        else
+        {
+            switchingAnimation = Mathf.Clamp(switchingAnimation-weaponSwitchSpeed*(Time.deltaTime*60),  0, 1);
         }
 
+        
 
+//sprint on/off
         if (useSprintToggle == true)
         {
             if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -139,7 +176,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             }
                 
         }
-        if (sprinting == true && isGrounded == true && inputDistance == 1)
+        if (sprinting == true && isGrounded == true && inputDistance > .95)
         {
             sprintingAnimation = Mathf.Clamp(sprintingAnimation + (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
         }
@@ -148,6 +185,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             sprintingAnimation = Mathf.Clamp(sprintingAnimation - (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
         }
         
+
+//jumping
         if (isGrounded)
         {
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, Mathf.Clamp(inputDistance, 0f, 1f), Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
@@ -164,29 +203,17 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, 0, Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
         }
 
-        if (Input.GetMouseButton(0))
-        {
-            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false)
-            {
-                if (Arsenal.Items[CurrentWeapon].fireMode != "full")
-                {
-                    firing = true;
-                }
-                lastFire = Time.time;
-                Debug.Log("Fire!");
-                Recoil += 1f;
-            }
-        }
-        else
-        {
-            firing = false;
-        }
+
+//recoil values
         Recoil -= recoilSpeed*(Time.deltaTime*60);
         if (Recoil < 0)
         {
             Recoil = 0;
         }
+        smoothRecoil = smoothRecoil - ( smoothRecoil - Recoil ) * 0.45f*(Time.deltaTime*60);
 
+
+//setting weapon and camera position
         float walkWobbleX = Mathf.Sin(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
         float walkWobbleY =  Mathf.Sin(walkWobbleTime * walkWobbleSpeed*2) * smoothMovementIntensity;
         float walkWobbleX2 = Mathf.Cos(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
@@ -201,27 +228,55 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 
         Camera.transform.position = new Vector3(Camera.transform.position.x, CameraFollowHeight, Camera.transform.position.z);
         Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x, (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
-    
-        Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),-smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),0) + smoothWeaponShake;
+        Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) - switchingAnimation*.75f,    -smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) +smoothRecoil*0.075f - switchingAnimation*1.5f,   -smoothRecoil*0.35f) + smoothWeaponShake;
         WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
         WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(WeaponOffsetPosition.z+weaponFinalOffsetPosition.z)) + (WeaponHolder.transform.up*(WeaponOffsetPosition.y+weaponFinalOffsetPosition.y)) + (WeaponHolder.transform.right*(WeaponOffsetPosition.x+weaponFinalOffsetPosition.x));
-        WeaponHolder.transform.rotation *= quaternion.Euler(Recoil,SmoothDeltaX*1.5f,0)*WeaponOffsetRotation;
+        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
     }
 
     void FixedUpdate()
     {
-            if (isGrounded)
+//weapon fire
+        if (Input.GetMouseButton(0))
+        {
+            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false)
             {
-                if (inputDistance > 0)
+                if (Arsenal.Items[CurrentWeapon].fireMode != "full")
                 {
-                    rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
+                    firing = true;
                 }
-                else
+                lastFire = Time.time;
+
+                Camera.transform.rotation = Quaternion.Euler(yRotation, xRotation, 0);
+                if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, 5000, ~LayerMask.GetMask("Player")))
                 {
-                    sprinting = false;
+                    GameObject impact = Instantiate(GenericBulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
+                    ParticleSystem ps = impact.GetComponent<ParticleSystem>();
+                    ps.Emit(5);
+                    impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
                 }
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x / (1+(Friction)), rb.linearVelocity.y, rb.linearVelocity.z / (1+(Friction)));
+
+                Recoil = (Recoil*0.75f) + Arsenal.Items[CurrentWeapon].recoil;
             }
+        }
+        else
+        {
+            firing = false;
+        }
+
+//player physics
+        if (isGrounded)
+        {
+            if (inputDistance > 0)
+            {
+                rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
+            }
+            else
+            {
+                sprinting = false;
+            }
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x / (1+(Friction)), rb.linearVelocity.y, rb.linearVelocity.z / (1+(Friction)));
+        }
     }
 
     
