@@ -11,6 +11,7 @@ public class EnemyMovement : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
+        Players = player.GetComponent<Player>();
     }
 
     void Update()
@@ -26,8 +27,11 @@ public class EnemyMovement : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        Debug.Log("Something entered trigger");
+
         if(other.CompareTag("Player"))
         {
+            Debug.Log("Player entererd trigger");
             Players.Health -= enemyStats.Damage;
             Debug.Log($"{enemyStats.Name} dealt {enemyStats.Damage} damage! {Players.Health} health remaining.");
         }

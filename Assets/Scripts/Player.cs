@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SocialPlatforms;
 
-public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
+public class Player : MonoBehaviour
 {
     private Rigidbody rb;
     public Camera Camera;
@@ -37,6 +37,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private int switchTo = 0;
 
 
+    public float Health = 100f;
+    public float Stamina = 100f;
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
     public float SprintSpeedMultiplier = 1.5f;
@@ -125,7 +127,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             }
             switchTo = clamped;
         }
-        Debug.Log(CurrentWeapon);
+        //Debug.Log(CurrentWeapon);
         if (switchingWeapon == true)
         {
             if (switchTo == CurrentWeapon)
