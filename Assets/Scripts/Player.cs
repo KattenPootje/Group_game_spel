@@ -3,6 +3,7 @@ using Mono.Cecil.Cil;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour 
 {
@@ -27,6 +28,7 @@ public class Player : MonoBehaviour
     private int CurrentWeapon = 0;
 
 
+    public float Health =100;
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
     public float SprintSpeedMultiplier = 1.5f;
@@ -49,8 +51,9 @@ public class Player : MonoBehaviour
     public Quaternion DefaultWeaponOffsetRotation = Quaternion.Euler(0f, 0f, 0f);
     public Vector3 SprintWeaponOffsetPosition = new Vector3(0.5f, -0.8f, 1f);
     public Quaternion SprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
+    public Image healthImage;
 
-    
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -142,6 +145,10 @@ public class Player : MonoBehaviour
         {
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, 0, Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
         }
+
+        healthImage.fillAmount = Health / 100f;
+
+
         float walkWobbleX = Mathf.Sin(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
         float walkWobbleY =  Mathf.Sin(walkWobbleTime * walkWobbleSpeed*2) * smoothMovementIntensity;
         float walkWobbleX2 = Mathf.Cos(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
