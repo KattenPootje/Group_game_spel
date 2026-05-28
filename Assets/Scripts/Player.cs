@@ -2,6 +2,7 @@ using System;
 using Mono.Cecil.Cil;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SocialPlatforms;
 using UnityEngine.UI;
 
@@ -59,6 +60,7 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         Cursor.lockState = CursorLockMode.Locked;
         CameraFollowHeight = Camera.transform.position.y;
+        lastFire = Time.time;
     }
 
     void Update()
@@ -80,9 +82,10 @@ public class Player : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(0, xRotation, 0f);
 
-        CameraFollowHeight = CameraFollowHeight - ( CameraFollowHeight - (transform.position.y + 0.6f) ) / CameraFollowSpeed*(Time.deltaTime*60);
+        CameraFollowHeight = CameraFollowHeight - ( CameraFollowHeight - (transform.position.y + 0.6f) ) / CameraFollowSpeed*(Time.deltaTime*60); // smooth camera
         if (Physics.SphereCast(transform.position, 0.2f, -Vector3.up, out RaycastHit hit, (float)(rb.GetComponent<Collider>().bounds.extents.y + 0.1)))
         {
+            //player land effect
             if (isGrounded == false)
             {
                 camShake += new Vector3(5,0,0);
@@ -130,6 +133,8 @@ public class Player : MonoBehaviour
             sprintingAnimation = Mathf.Clamp(sprintingAnimation - (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
         }
         
+
+//jumping
         if (isGrounded)
         {
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, Mathf.Clamp(inputDistance, 0f, 1f), Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
@@ -169,14 +174,48 @@ public class Player : MonoBehaviour
 
     void FixedUpdate()
     {
-            if (isGrounded)
+//weapon fire
+        if (Input.GetMouseButton(0))
+        {
+            sprinting = false;
+            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0)
             {
-                if (inputDistance > 0)
+                if (Arsenal.Items[CurrentWeapon].fireMode != "full")
                 {
                     rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
                     
+                    if (createImpactEffect == true)
+                    {
+                        GameObject impact = Instantiate(GenericBulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
+                        impact.transform.SetParent(hit.transform);
+                        ParticleSystem ps = impact.GetComponent<ParticleSystem>();
+                        ps.Emit(5);
+                        impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
+                    }
                 }
-                rb.linearVelocity = new Vector3(rb.linearVelocity.x / (1+(Friction)), rb.linearVelocity.y, rb.linearVelocity.z / (1+(Friction)));
+
+                Recoil = (Recoil*0.75f) + Arsenal.Items[CurrentWeapon].recoil;
             }
+        }
+        else
+        {
+            firing = false;
+        }
+
+//player physics
+        if (isGrounded)
+        {
+            if (inputDistance > 0)
+            {
+                rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
+            }
+            else
+            {
+                sprinting = false;
+            }
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x / (1+(Friction)), rb.linearVelocity.y, rb.linearVelocity.z / (1+(Friction)));
+        }
     }
+
+    
 }
