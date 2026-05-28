@@ -14,9 +14,9 @@ GameObject:
   - component: {fileID: 854015821658250595}
   - component: {fileID: 6121417087662808463}
   - component: {fileID: 4707603567631505231}
-  m_Layer: 3
+  m_Layer: 6
   m_Name: Enemy
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -91,6 +91,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!136 &854015821658250595
 CapsuleCollider:
@@ -156,5 +157,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyMovement
   player: {fileID: 0}
   enemyStats: {fileID: 11400000, guid: 0e8d0a6c5d9a162448082385c1cb9e6e, type: 2}
-  Players: {fileID: 0}
+  PlayerScript: {fileID: 0}
   speed: 2
