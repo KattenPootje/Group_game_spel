@@ -1,16 +1,16 @@
 using System;
-using System.Threading.Tasks;
+using Mono.Cecil.Cil;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.UI;
 
-public class Player : MonoBehaviour
+public class Player : MonoBehaviour 
 {
     private Rigidbody rb;
     public Camera Camera;
     public Arsenal Arsenal;
-    public GameObject GenericBulletImpact;
     private float xRotation = 0f;
     private float yRotation = 0f;
     private bool isGrounded = false;
@@ -27,17 +27,9 @@ public class Player : MonoBehaviour
     private bool sprinting = false;
     private float sprintingAnimation = 0f;
     private int CurrentWeapon = 0;
-    private float Recoil = 0;
-    private float smoothRecoil = 0;
-    private float smoothRecoil2 = 0;
-    private float lastFire;
-    private bool firing = false;
-    private bool switchingWeapon = false;
-    private float switchingAnimation = 0f;
-    private int switchTo = 0;
 
 
-    public float Health = 100f;
+    public float Health =100;
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
     public float SprintSpeedMultiplier = 1.5f;
@@ -53,18 +45,16 @@ public class Player : MonoBehaviour
     public float MouseDeltaCap = 8;
     public float SmoothMouseDelta = 0.12f;
     public Transform WeaponHolder;
-    public float weaponSwitchSpeed = 0.05f;
-    public float recoilSpeed = 0.06f;
     public float weaponShakeDamping = 0.15f;
     public float weaponWobbleIntensity = 0.04f;
     public float weaponLowerIntensity = 0.2f;
     public Vector3 DefaultWeaponOffsetPosition = new Vector3(0.5f, -0.5f, 1f);
     public Quaternion DefaultWeaponOffsetRotation = Quaternion.Euler(0f, 0f, 0f);
-    public Vector3 DefaultSprintWeaponOffsetPosition = new Vector3(0.5f, -0.8f, 1f);
-    public Quaternion DefaultSprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
+    public Vector3 SprintWeaponOffsetPosition = new Vector3(0.5f, -0.8f, 1f);
+    public Quaternion SprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
+    public Image healthImage;
 
 
-    
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -75,10 +65,12 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-//player input, mouse input
+        Debug.Log(Arsenal.Items[0].name);
+
         inputDistance = math.sqrt(Input.GetAxis("Vertical") * Input.GetAxis("Vertical") + Input.GetAxis("Horizontal") * Input.GetAxis("Horizontal"));
         
 
+        //mouse input
         Vector2 MouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
         xRotation += Input.GetAxis("Mouse X")*Sensitivity;
         yRotation = math.clamp(yRotation-Input.GetAxis("Mouse Y")*Sensitivity, -75f, 75f);
@@ -106,82 +98,33 @@ public class Player : MonoBehaviour
             isGrounded = false;
         }
 
-
-//weapon switching
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if ( scroll != 0f )
+        if (useSprintToggle == true)
         {
-            if ( scroll > 0 )
+            if (Input.GetKeyDown(KeyCode.LeftShift))
             {
-                switchTo ++;
-            }
-            else
-            {
-                switchTo --;
-            }
-            int clamped = Mathf.Clamp(switchTo, 0, Arsenal.Items.Length-1);
-            if (switchTo == clamped)
-            {
-                switchingWeapon = true;
-            }
-            switchTo = clamped;
-        }
-        //Debug.Log(CurrentWeapon);
-        if (switchingWeapon == true)
-        {
-            if (switchTo == CurrentWeapon)
-            {
-                switchingWeapon = false;
-            }
-            else
-            {
-                switchingAnimation = Mathf.Clamp(switchingAnimation+weaponSwitchSpeed*(Time.deltaTime*60),  0, 1);
-                if (switchingAnimation == 1)
+                if (sprinting == true)
                 {
-                    switchingWeapon = false;
-                    CurrentWeapon = switchTo;
-                    firing = false;
+                    sprinting = false;
+                }
+                else
+                {
+                    sprinting = true;
                 }
             }
         }
         else
         {
-            switchingAnimation = Mathf.Clamp(switchingAnimation-weaponSwitchSpeed*(Time.deltaTime*60),  0, 1);
-        }
-
-        
-
-//sprint on/off
-        if (Input.GetMouseButton(0) == false)
-        {
-            if (useSprintToggle == true)
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                if (Input.GetKeyDown(KeyCode.LeftShift))
-                {
-                    if (sprinting == true)
-                    {
-                        sprinting = false;
-                    }
-                    else
-                    {
-                        sprinting = true;
-                    }
-                }
+                sprinting = true;
             }
             else
             {
-                if (Input.GetKey(KeyCode.LeftShift))
-                {
-                    sprinting = true;
-                }
-                else
-                {
-                    sprinting = false;
-                }
-                    
+                sprinting = false;
             }
+                
         }
-        if (sprinting == true && isGrounded == true && inputDistance > .95)
+        if (sprinting == true && isGrounded == true && inputDistance == 1)
         {
             sprintingAnimation = Mathf.Clamp(sprintingAnimation + (sprintTransitionSpeed*(Time.deltaTime*60)), 0, 1);
         }
@@ -208,25 +151,12 @@ public class Player : MonoBehaviour
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, 0, Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
         }
 
-
-//recoil values
-        Recoil -= recoilSpeed*(Time.deltaTime*60);
-        if (Recoil < 0)
-        {
-            Recoil = 0;
-        }
-        smoothRecoil = smoothRecoil - ( smoothRecoil - Recoil ) * 0.75f*(Time.deltaTime*60);
-        //second recoil to make it look better
-        smoothRecoil2 = smoothRecoil2 - ( smoothRecoil2 - Recoil ) * 0.225f*(Time.deltaTime*60);
+        healthImage.fillAmount = Health / 100f;
 
 
-//setting weapon and camera position
         float walkWobbleX = Mathf.Sin(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
         float walkWobbleY =  Mathf.Sin(walkWobbleTime * walkWobbleSpeed*2) * smoothMovementIntensity;
         float walkWobbleX2 = Mathf.Cos(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
-
-        Vector3 WeaponOffsetPosition = Vector3.Lerp(Arsenal.Items[CurrentWeapon].WeaponOffsetPosition, Arsenal.Items[CurrentWeapon].SprintWeaponOffsetPosition, sprintingAnimation);
-        Quaternion WeaponOffsetRotation = Quaternion.Lerp(Arsenal.Items[CurrentWeapon].WeaponOffsetRotation, Arsenal.Items[CurrentWeapon].SprintWeaponOffsetRotation, sprintingAnimation);
 
         camShake = Vector3.Lerp(camShake, Vector3.zero, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
         smoothCamShake = Vector3.Lerp(smoothCamShake, camShake, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
@@ -234,13 +164,12 @@ public class Player : MonoBehaviour
         smoothWeaponShake = Vector3.Lerp(smoothWeaponShake, weaponShake, Mathf.Clamp(weaponShakeDamping*(Time.deltaTime*60), 0f, 1f));
 
         Camera.transform.position = new Vector3(Camera.transform.position.x, CameraFollowHeight, Camera.transform.position.z);
-        Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x - smoothRecoil*3f+smoothRecoil2*1.5f,    (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
-        
-        //weapon position
-        Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) - switchingAnimation*.75f + Mathf.Sin(Time.time*10)*smoothRecoil2*0.15f,    -smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) +smoothRecoil*0.075f - switchingAnimation*1.5f,   -smoothRecoil*0.35f - smoothRecoil2*0.5f) + smoothWeaponShake;
+        Camera.transform.localRotation = Quaternion.Euler(yRotation + (walkWobbleY*walkWobbleIntensity) + smoothCamShake.x, (walkWobbleX*walkWobbleIntensity) + smoothCamShake.y, smoothCamShake.z);
+    
+        Vector3 weaponOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),-smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f),0) + smoothWeaponShake;
         WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
-        WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(WeaponOffsetPosition.z+weaponFinalOffsetPosition.z)) + (WeaponHolder.transform.up*(WeaponOffsetPosition.y+weaponFinalOffsetPosition.y)) + (WeaponHolder.transform.right*(WeaponOffsetPosition.x+weaponFinalOffsetPosition.x));
-        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f + smoothRecoil2*0.4f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
+        WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(Mathf.Lerp(DefaultWeaponOffsetPosition.z, SprintWeaponOffsetPosition.z, sprintingAnimation)+weaponOffsetPosition.z)) + (WeaponHolder.transform.up*(Mathf.Lerp(DefaultWeaponOffsetPosition.y, SprintWeaponOffsetPosition.y, sprintingAnimation)+weaponOffsetPosition.y)) + (WeaponHolder.transform.right*(Mathf.Lerp(DefaultWeaponOffsetPosition.x, SprintWeaponOffsetPosition.x, sprintingAnimation)+weaponOffsetPosition.x));
+        WeaponHolder.transform.rotation *= quaternion.Euler(0,SmoothDeltaX*1.5f,0)*Quaternion.Lerp(DefaultWeaponOffsetRotation, SprintWeaponOffsetRotation, sprintingAnimation);
     }
 
     void FixedUpdate()
@@ -253,25 +182,7 @@ public class Player : MonoBehaviour
             {
                 if (Arsenal.Items[CurrentWeapon].fireMode != "full")
                 {
-                    firing = true;
-                }
-                lastFire = Time.time;
-
-                Camera.transform.rotation = Quaternion.Euler(yRotation, xRotation, 0);
-                if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, 5000, ~LayerMask.GetMask("Player")))
-                {
-                    bool createImpactEffect = true;
-                    if (hit.transform.gameObject.tag == "Enemy")
-                    {
-                        hit.transform.gameObject.GetComponent<EnemyMovement>().Health -= Arsenal.Items[CurrentWeapon].damage;
-                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().Health < 0)
-                        {
-                            Destroy(hit.transform.gameObject);
-                            createImpactEffect = false;
-                        }
-                    }
-                    
-                    //hit.transform.
+                    rb.AddForce((transform.forward*Input.GetAxis("Vertical")+transform.right*Input.GetAxis("Horizontal"))/Mathf.Clamp(inputDistance, 1, 1.5f)*WalkSpeed*(1+(SprintSpeedMultiplier*sprintingAnimation)));
                     
                     if (createImpactEffect == true)
                     {
