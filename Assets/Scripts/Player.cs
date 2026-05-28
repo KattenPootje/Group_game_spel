@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SocialPlatforms;
 
-public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
+public class Player : MonoBehaviour
 {
     private Rigidbody rb;
     public Camera Camera;
