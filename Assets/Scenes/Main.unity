@@ -793,7 +793,6 @@ MonoBehaviour:
   Arsenal: {fileID: 1363291216}
   GenericBulletImpact: {fileID: 2721504643316295877, guid: 28389f5d64a5d4043aa6c2e8979501b0, type: 3}
   Health: 100
-  Stamina: 100
   Sensitivity: 2
   WalkSpeed: 30
   SprintSpeedMultiplier: 0.4
@@ -1444,10 +1443,8 @@ MonoBehaviour:
   cubePrefab: {fileID: 1512548677885106959, guid: 39e2aca2bdc71394798735a7af194a46, type: 3}
   spawnPoint:
   - {fileID: 2094019907}
-  - {fileID: 367863714}
-  - {fileID: 957980186}
   cubesPerWave: 5
-  timeBetweenWaves: 3
+  timeBetweenWaves: 10
 --- !u!1 &1841444778 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7146521406498821007, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
@@ -1697,8 +1694,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2079965097}
+  - component: {fileID: 2079965100}
   - component: {fileID: 1789921731}
+  - component: {fileID: 2079965099}
   m_Layer: 0
   m_Name: WaveManager
   m_TagString: Untagged
@@ -1706,7 +1704,15 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2079965097
+--- !u!33 &2079965099
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079965096}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!4 &2079965100
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1741,12 +1747,10 @@ SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1190577809}
-  - {fileID: 2079965097}
+  - {fileID: 2079965100}
   - {fileID: 832575519}
   - {fileID: 858238472}
   - {fileID: 2094019907}
-  - {fileID: 367863714}
-  - {fileID: 957980186}
   - {fileID: 643733277}
   - {fileID: 794452113}
   - {fileID: 1929570055}

@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2ac902a9f154f14a965c9498b426644, type: 3}
   m_Name: Enemy1
   m_EditorClassIdentifier: Assembly-CSharp::Enemies
-  Health: 100
-  Damage: 10
-  Range: 10
-  Speed: 2
   Name: Enemy
+  Health: 200
+  MovementSpeed: 10
+  AttackRange: 2
+  AttackCooldown: 0.5
+  AttackDamage: 15

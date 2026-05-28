@@ -38,7 +38,6 @@ public class Player : MonoBehaviour
 
 
     public float Health = 100f;
-    public float Stamina = 100f;
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
     public float SprintSpeedMultiplier = 1.5f;
@@ -261,10 +260,27 @@ public class Player : MonoBehaviour
                 Camera.transform.rotation = Quaternion.Euler(yRotation, xRotation, 0);
                 if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, 5000, ~LayerMask.GetMask("Player")))
                 {
-                    GameObject impact = Instantiate(GenericBulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
-                    ParticleSystem ps = impact.GetComponent<ParticleSystem>();
-                    ps.Emit(5);
-                    impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
+                    bool createImpactEffect = true;
+                    if (hit.transform.gameObject.tag == "Enemy")
+                    {
+                        hit.transform.gameObject.GetComponent<EnemyMovement>().Health -= Arsenal.Items[CurrentWeapon].damage;
+                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().Health < 0)
+                        {
+                            Destroy(hit.transform.gameObject);
+                            createImpactEffect = false;
+                        }
+                    }
+                    
+                    //hit.transform.
+                    
+                    if (createImpactEffect == true)
+                    {
+                        GameObject impact = Instantiate(GenericBulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
+                        impact.transform.SetParent(hit.transform);
+                        ParticleSystem ps = impact.GetComponent<ParticleSystem>();
+                        ps.Emit(5);
+                        impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
+                    }
                 }
 
                 Recoil = (Recoil*0.75f) + Arsenal.Items[CurrentWeapon].recoil;

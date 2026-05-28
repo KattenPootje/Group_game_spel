@@ -2,16 +2,20 @@ using UnityEngine;
 
 public class EnemyMovement : MonoBehaviour
 {
-    [SerializeField] private GameObject player;
-    [SerializeField] private Enemies enemyStats;
-    [SerializeField] private Player Players;
+    private GameObject player;
+    public Enemies enemyStats;
+    private Player PlayerScript;
+    public float Health;
     public float speed = 3f;
+
+    private float LastAttack = 0f;
 
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        Players = player.GetComponent<Player>();
+        PlayerScript = player.GetComponent<Player>();
+        Health = enemyStats.Health;
     }
 
     void Update()
@@ -23,17 +27,14 @@ public class EnemyMovement : MonoBehaviour
             player.transform.position,
             speed * Time.deltaTime
         );
-    }
 
-    void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Something entered trigger");
-
-        if(other.CompareTag("Player"))
+        if (Time.time-enemyStats.AttackCooldown > LastAttack)
         {
-            Debug.Log("Player entererd trigger");
-            Players.Health -= enemyStats.Damage;
-            Debug.Log($"{enemyStats.Name} dealt {enemyStats.Damage} damage! {Players.Health} health remaining.");
+            if ((transform.position-player.transform.position).magnitude < enemyStats.AttackRange)
+            {
+                PlayerScript.Health -= enemyStats.AttackDamage;
+                LastAttack = Time.time;
+            }
         }
     }
 }
