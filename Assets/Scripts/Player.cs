@@ -3,6 +3,7 @@ using System.Collections;
 using System.Threading.Tasks;
 using TMPro;
 using Unity.Mathematics;
+using Unity.VectorGraphics;
 using UnityEngine;
 using UnityEngine.Apple.ReplayKit;
 using UnityEngine.InputSystem;
@@ -17,7 +18,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public Arsenal Arsenal;
     public Inventory Inventory;
     public WaveSystem WaveSystem;
-    public GameObject GenericBulletImpact;
+    public GameObject[] BulletImpact;
     public Image healthImage;
     public TextMeshProUGUI WeaponUIText;
     public TextMeshProUGUI WaveText1;
@@ -358,11 +359,15 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                 if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, 5000, ~LayerMask.GetMask("Player")))
                 {
                     bool createImpactEffect = true;
+                    bool parentToPart = true;
+                    int impactType = 0;
                     if (hit.transform.gameObject.tag == "Enemy")
                     {
+                        impactType = 1;
                         hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
                         if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
                         {
+                            parentToPart = false;
                             if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
                             {
                                 if (hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length > 0)
@@ -385,11 +390,13 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     }
                     
                     //hit.transform.
-                    
                     if (createImpactEffect == true)
                     {
-                        GameObject impact = Instantiate(GenericBulletImpact, hit.point, Quaternion.LookRotation(hit.normal));
-                        impact.transform.SetParent(hit.transform);
+                        GameObject impact = Instantiate(BulletImpact[impactType], hit.point, Quaternion.LookRotation(hit.normal));
+                        if (parentToPart == true)
+                        {
+                            impact.transform.SetParent(hit.transform);
+                        }
                         ParticleSystem ps = impact.GetComponent<ParticleSystem>();
                         ps.Emit(5);
                         impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
