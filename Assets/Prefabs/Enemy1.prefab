@@ -138,7 +138,7 @@ MonoBehaviour:
   health: 0
   itemDrops:
   - {fileID: 1303524175748930908, guid: 6b36bf42adbbc2049ba2de706da3cf2d, type: 3}
-  itemDropChance: 0.25
+  itemDropChance: 0.3
 --- !u!65 &6684532419647609990
 BoxCollider:
   m_ObjectHideFlags: 0

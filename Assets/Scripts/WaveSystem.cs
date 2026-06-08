@@ -64,7 +64,7 @@ public class WaveSystem : MonoBehaviour
         int spawnIndex = Random.Range(0, spawnPoint.Length);
         currentAliveEnemies += 1;
         GameObject cube = Instantiate(
-            Enemies[Random.Range(0,2)],
+            Enemies[Random.Range(0, Enemies.Length)],
             spawnPoint[spawnIndex].position,
             Quaternion.identity
         );

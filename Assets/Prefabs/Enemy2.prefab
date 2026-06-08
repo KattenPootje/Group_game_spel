@@ -139,7 +139,7 @@ MonoBehaviour:
   itemDrops:
   - {fileID: 1303524175748930908, guid: 65b86064450b89a4cb518a6751245112, type: 3}
   - {fileID: 1303524175748930908, guid: 511b9f2671ecead4f99fd29c7a7209da, type: 3}
-  itemDropChance: 0.25
+  itemDropChance: 0.3
 --- !u!65 &6684532419647609990
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -188,8 +188,8 @@ Transform:
   m_GameObject: {fileID: 2861412026260069837}
   serializedVersion: 2
   m_LocalRotation: {x: 0.70710677, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: -0.00000030035, z: 0}
-  m_LocalScale: {x: 0.11914537, y: 0.19934466, z: 0.19934466}
+  m_LocalPosition: {x: 0, y: 0.169, z: -0}
+  m_LocalScale: {x: 0.08797337, y: 0.14719012, z: 0.14719012}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8350055580353361270}
