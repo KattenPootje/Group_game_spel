@@ -4,13 +4,17 @@ using UnityEngine;
 public class Item
 {
     public string name;
+    public GameObject Prefab;
     public string weaponType;
     public int ammoType;
     public string fireMode;
     public float fireRate;
+    public float range;
     public int magSize;
     public float recoil;
     public int damage;
+    public float damageKnockback;
+    public float fireDelay;
     public float reloadDuration;
     public Vector3 WeaponOffsetPosition;
     public Quaternion WeaponOffsetRotation;

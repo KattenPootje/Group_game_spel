@@ -1049,7 +1049,7 @@ Transform:
   m_GameObject: {fileID: 858238467}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.35356, y: 5.78, z: 0.35356}
+  m_LocalPosition: {x: 0.15, y: 5.78, z: 0.35356}
   m_LocalScale: {x: 0.43432, y: 0.6920455, z: 0.43432}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1096,6 +1096,7 @@ MonoBehaviour:
   MouseDeltaCap: 0.2
   SmoothMouseDelta: 0.12
   WeaponHolder: {fileID: 1929570055}
+  WeaponPrefab: {fileID: 0}
   weaponSwitchSpeed: 0.05
   recoilSpeed: 0.125
   weaponShakeDamping: 0.175
@@ -1791,39 +1792,51 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Arsenal
   Items:
   - name: Weapon1
+    Prefab: {fileID: 858363305225413659, guid: a8a05be70701f004694ca0cb660418e9, type: 3}
     weaponType: melee
     ammoType: 0
-    fireMode: 
-    fireRate: 150
+    fireMode: auto
+    fireRate: 50
+    range: 2.15
     magSize: 0
     recoil: 0
-    damage: 50
+    damage: 80
+    damageKnockback: 5
+    fireDelay: 0.35
     reloadDuration: 0
-    WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
-    WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
-    SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
+    WeaponOffsetPosition: {x: 0.43, y: -0.52, z: 1}
+    WeaponOffsetRotation: {x: -0.08647815, y: -0.011156469, z: -0.1567296, w: 0.983785}
+    SprintWeaponOffsetPosition: {x: -0.37, y: -1.5, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon2
+    Prefab: {fileID: 0}
     weaponType: gun
     ammoType: 1
     fireMode: semi
     fireRate: 500
+    range: 2000
     magSize: 10
     recoil: 0.75
     damage: 60
+    damageKnockback: 2
+    fireDelay: 0
     reloadDuration: 1.25
     WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon3
+    Prefab: {fileID: 0}
     weaponType: gun
     ammoType: 2
-    fireMode: full
+    fireMode: auto
     fireRate: 800
+    range: 2000
     magSize: 30
     recoil: 0.5
     damage: 70
+    damageKnockback: 1
+    fireDelay: 0
     reloadDuration: 0.75
     WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -2683,7 +2696,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.59330463, y: 1.1925614, z: 1.0224128}
-  m_LocalScale: {x: 0.10197, y: 0.10197001, z: 0.52064896}
+  m_LocalScale: {x: 0.10197, y: 0.10197001, z: 0.10197}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
