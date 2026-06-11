@@ -51,9 +51,6 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private float reloadStart = 0f;
     private int reloadID = 0;
     private bool reloading = false;
-    private float fireStart = 0;
-    private bool fired = false;
-    
 
     [Header("Player")]
     public float Health = 100f;
@@ -75,7 +72,6 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public float SmoothMouseDelta = 0.12f;
     [Header("Weapons")]
     public Transform WeaponHolder;
-    public GameObject WeaponPrefab;
     public float weaponSwitchSpeed = 0.05f;
     public float recoilSpeed = 0.06f;
     public float weaponShakeDamping = 0.15f;
@@ -94,12 +90,6 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         Cursor.lockState = CursorLockMode.Locked;
         CameraFollowHeight = Camera.transform.position.y;
         lastFire = Time.time;
-
-        if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].Prefab != null)
-        {
-            WeaponPrefab = Instantiate(Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].Prefab, WeaponHolder.transform.position, WeaponHolder.transform.rotation);
-            WeaponPrefab.transform.SetParent(WeaponHolder.transform);
-        }
     }
 
     void Update()
@@ -170,16 +160,6 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     switchingWeapon = false;
                     CurrentWeapon = switchTo;
                     firing = false;
-                    
-                    if (WeaponPrefab != null)
-                    {
-                        Destroy(WeaponPrefab);
-                    }
-                    if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].Prefab != null)
-                    {
-                        WeaponPrefab = Instantiate(Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].Prefab, WeaponHolder.transform.position, WeaponHolder.transform.rotation);
-                        WeaponPrefab.transform.SetParent(WeaponHolder.transform);
-                    }
 
                     if (reloading == true)
                     {
@@ -338,8 +318,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         Vector3 weaponFinalOffsetPosition = new Vector3(walkWobbleX*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) - switchingAnimation*.75f + Mathf.Sin(Time.time*10)*smoothRecoil2*0.15f,    -smoothMovementIntensity*weaponLowerIntensity+Mathf.Abs(-walkWobbleX2)*1.5f*weaponWobbleIntensity*(1+sprintingAnimation*1.5f) +smoothRecoil*0.075f - switchingAnimation*1.5f,   -smoothRecoil*0.35f - smoothRecoil2*0.5f) + smoothWeaponShake;
         WeaponHolder.transform.rotation = Camera.transform.rotation * quaternion.Euler(-SmoothDeltaY*0.5f,0,0);;
         WeaponHolder.transform.position = Camera.transform.position + (WeaponHolder.transform.forward*(WeaponOffsetPosition.z+weaponFinalOffsetPosition.z)) + (WeaponHolder.transform.up*(WeaponOffsetPosition.y+weaponFinalOffsetPosition.y)) + (WeaponHolder.transform.right*(WeaponOffsetPosition.x+weaponFinalOffsetPosition.x));
-        WeaponHolder.transform.rotation *= WeaponOffsetRotation;
-        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f + smoothRecoil2*0.4f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0);
+        WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f + smoothRecoil2*0.4f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
     }
 
     IEnumerator ReloadFinish(int currentReloadID, int missingAmmo)
@@ -360,13 +339,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 //weapon fire
         if (Input.GetMouseButton(0))
         {
-            bool canFire = false;
-            if (Inventory.Items[CurrentWeapon].Ammo > 0 || Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].weaponType == "melee")
-            {
-                canFire = true;
-            }
             sprinting = false;
-            if (Time.time - (60/Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0 && canFire == true)
+            if (Time.time - (60/Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0 && Inventory.Items[CurrentWeapon].Ammo > 0)
             {
                 if (reloading == true)
                 {
@@ -375,92 +349,68 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                 }
                 
 
-                if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireMode != "auto")
+                if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireMode != "full")
                 {
                     firing = true;
                 }
                 lastFire = Time.time;
 
-                fireStart = Time.time;
-                fired = false;
-                
-
-                if (WeaponPrefab != null)
+                Camera.transform.rotation = Quaternion.Euler(yRotation, xRotation, 0);
+                if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, 5000, ~LayerMask.GetMask("Player")))
                 {
-                    Animator animator = WeaponPrefab.GetComponent<Animator>();
-                    Debug.Log(animator);
-                    if (animator != null)
+                    bool createImpactEffect = true;
+                    bool parentToPart = true;
+                    int impactType = 0;
+                    if (hit.transform.gameObject.tag == "Enemy")
                     {
-                        animator.SetTrigger("Fire");
+                        impactType = 1;
+                        hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
+                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
+                        {
+                            parentToPart = false;
+                            if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
+                            {
+                                if (hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length > 0)
+                                {
+                                    GameObject itemDrop = hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops[UnityEngine.Random.Range(0, hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length)];
+                                    
+                                    GameObject newItem = Instantiate(
+                                        itemDrop,
+                                        hit.transform.gameObject.transform.position,
+                                        Quaternion.identity
+                                    );
+                                    newItem.GetComponent<Rigidbody>().AddForce(0,70,0);
+                                }
+                            }
+
+                            WaveSystem.currentAliveEnemies -= 1;
+                            Destroy(hit.transform.gameObject);
+                            createImpactEffect = false;
+                        }
+                    }
+                    
+                    //hit.transform.
+                    if (createImpactEffect == true)
+                    {
+                        GameObject impact = Instantiate(BulletImpact[impactType], hit.point, Quaternion.LookRotation(hit.normal));
+                        if (parentToPart == true)
+                        {
+                            impact.transform.SetParent(hit.transform);
+                        }
+                        ParticleSystem ps = impact.GetComponent<ParticleSystem>();
+                        ps.Emit(5);
+                        impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
                     }
                 }
 
+                Recoil = (Recoil*0.75f) + Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].recoil;
+                Inventory.Items[CurrentWeapon].Ammo -= 1;
             }
         }
         else
         {
             firing = false;
         }
-
-        if (Time.time - Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireDelay > fireStart && fired == false)
-        {
-            fired = true;
-            if (Physics.Raycast(Camera.transform.position, Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].range, ~LayerMask.GetMask("Player")))
-            {
-                bool createImpactEffect = true;
-                bool parentToPart = true;
-                int impactType = 0;
-                if (hit.transform.gameObject.tag == "Enemy")
-                {
-                    impactType = 1;
-                    Vector3 dist = hit.transform.position-transform.position;
-                    dist = new Vector3(dist.x,0,dist.z);
-                    hit.transform.GetComponent<Rigidbody>().linearVelocity += (dist.normalized + new Vector3(0,1,0))*Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damageKnockback;
-                    hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
-                    if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
-                    {
-                        parentToPart = false;
-                        if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
-                        {
-                            if (hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length > 0)
-                            {
-                                GameObject itemDrop = hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops[UnityEngine.Random.Range(0, hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length)];
-                                
-                                GameObject newItem = Instantiate(
-                                    itemDrop,
-                                    hit.transform.gameObject.transform.position,
-                                    Quaternion.identity
-                                );
-                                newItem.GetComponent<Rigidbody>().AddForce(0,70,0);
-                            }
-                        }
-
-                        WaveSystem.currentAliveEnemies -= 1;
-                        Destroy(hit.transform.gameObject);
-                        createImpactEffect = false;
-                    }
-                }
-                
-                //hit.transform.
-                if (createImpactEffect == true)
-                {
-                    GameObject impact = Instantiate(BulletImpact[impactType], hit.point, Quaternion.LookRotation(hit.normal));
-                    if (parentToPart == true)
-                    {
-                        impact.transform.SetParent(hit.transform);
-                    }
-                    ParticleSystem ps = impact.GetComponent<ParticleSystem>();
-                    ps.Emit(5);
-                    impact.transform.Find("Hole").rotation *= Quaternion.Euler(0, 0, UnityEngine.Random.Range(0f, 360f));
-                }
-            }
-            if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].weaponType != "melee")
-            {
-                Recoil = (Recoil*0.75f) + Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].recoil;
-                Inventory.Items[CurrentWeapon].Ammo -= 1;
-            }
-        }
-
 
 //player physics
         if (isGrounded)
