@@ -1,16 +1,28 @@
 using System;
+using System.Collections;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Apple.ReplayKit;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
 using UnityEngine.SocialPlatforms;
+using UnityEngine.UI;
 
 public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 {
     private Rigidbody rb;
     public Camera Camera;
     public Arsenal Arsenal;
+    public Inventory Inventory;
+    public WaveSystem WaveSystem;
     public GameObject GenericBulletImpact;
+    public Image healthImage;
+    public TextMeshProUGUI WeaponUIText;
+    public TextMeshProUGUI WaveText1;
+    public TextMeshProUGUI WaveText2;
+    public Image reloadBar;
     private float xRotation = 0f;
     private float yRotation = 0f;
     private bool isGrounded = false;
@@ -35,9 +47,13 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private bool switchingWeapon = false;
     private float switchingAnimation = 0f;
     private int switchTo = 0;
+    private float reloadStart = 0f;
+    private int reloadID = 0;
+    private bool reloading = false;
 
-
+    [Header("Player")]
     public float Health = 100f;
+    [Header("Movement")]
     public float Sensitivity = 2f;
     public float WalkSpeed = 5f;
     public float SprintSpeedMultiplier = 1.5f;
@@ -46,12 +62,14 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public float JumpMovementBoost = 1.25f;
     public bool useSprintToggle = true;
     public float sprintTransitionSpeed = 0.1f;
+    [Header("Camera")]
     public float CameraFollowSpeed = 0.75f;
     public float walkWobbleSpeed = 25f;
     public float walkWobbleIntensity = 5f;
     public float camShakeDamping = 0.15f;
     public float MouseDeltaCap = 8;
     public float SmoothMouseDelta = 0.12f;
+    [Header("Weapons")]
     public Transform WeaponHolder;
     public float weaponSwitchSpeed = 0.05f;
     public float recoilSpeed = 0.06f;
@@ -119,14 +137,14 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             {
                 switchTo --;
             }
-            int clamped = Mathf.Clamp(switchTo, 0, Arsenal.Items.Length-1);
+            int clamped = Mathf.Clamp(switchTo, 0, Inventory.Items.Length-1);
             if (switchTo == clamped)
             {
                 switchingWeapon = true;
             }
             switchTo = clamped;
         }
-        //Debug.Log(CurrentWeapon);
+        
         if (switchingWeapon == true)
         {
             if (switchTo == CurrentWeapon)
@@ -141,6 +159,13 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     switchingWeapon = false;
                     CurrentWeapon = switchTo;
                     firing = false;
+
+                    if (reloading == true)
+                    {
+                        reloading = false;
+                        reloadID += 1;
+                    }
+                    Debug.Log(CurrentWeapon);
                 }
             }
         }
@@ -208,6 +233,30 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             smoothMovementIntensity = Mathf.Lerp(smoothMovementIntensity, 0, Mathf.Clamp(0.15f*(Time.deltaTime*60), 0f, 1f));
         }
 
+//reload
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            if (Inventory.Items[CurrentWeapon].Ammo < Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize && reloading == false)
+            {
+                int missingAmmo = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize- Inventory.Items[CurrentWeapon].Ammo;
+                if (missingAmmo > Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo)
+                {
+                    missingAmmo = Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
+                }
+                if (missingAmmo > 0)
+                {
+                    reloading = true;
+                    reloadStart = Time.time;
+
+                    reloadID += 1;
+                    int currentReloadID = reloadID;
+
+                    StartCoroutine(ReloadFinish(currentReloadID, missingAmmo));
+
+                }
+            }
+        }
+
 
 //recoil values
         Recoil -= recoilSpeed*(Time.deltaTime*60);
@@ -219,14 +268,42 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         //second recoil to make it look better
         smoothRecoil2 = smoothRecoil2 - ( smoothRecoil2 - Recoil ) * 0.225f*(Time.deltaTime*60);
 
+//UI
+        healthImage.fillAmount = Health / 100f;
+        WeaponUIText.text = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].name + " - " + Inventory.Items[CurrentWeapon].Ammo + " / " + Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
+        if (reloading == true)
+        {
+            reloadBar.fillAmount = (Time.time-reloadStart)/Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].reloadDuration;
+        }
+        else
+        {
+            reloadBar.fillAmount = 0;
+        }
+        WaveText1.text = "Wave " + WaveSystem.currentWave.ToString();
+        if (WaveSystem.levelEnding == true)
+        {
+            WaveText2.text = "Level done";
+        }
+        else
+        {
+            if (WaveSystem.timeBetweenWaves - (Time.time-WaveSystem.waveStartTime) < 0)
+            {
+                WaveText2.text = WaveSystem.currentAliveEnemies.ToString() + " Enemies left";
+            }
+            else
+            {
+                WaveText2.text = math.ceil(WaveSystem.timeBetweenWaves - (Time.time-WaveSystem.waveStartTime)).ToString() + " Seconds";
+            }
+        }
+
 
 //setting weapon and camera position
         float walkWobbleX = Mathf.Sin(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
         float walkWobbleY =  Mathf.Sin(walkWobbleTime * walkWobbleSpeed*2) * smoothMovementIntensity;
         float walkWobbleX2 = Mathf.Cos(walkWobbleTime * walkWobbleSpeed) * smoothMovementIntensity;
 
-        Vector3 WeaponOffsetPosition = Vector3.Lerp(Arsenal.Items[CurrentWeapon].WeaponOffsetPosition, Arsenal.Items[CurrentWeapon].SprintWeaponOffsetPosition, sprintingAnimation);
-        Quaternion WeaponOffsetRotation = Quaternion.Lerp(Arsenal.Items[CurrentWeapon].WeaponOffsetRotation, Arsenal.Items[CurrentWeapon].SprintWeaponOffsetRotation, sprintingAnimation);
+        Vector3 WeaponOffsetPosition = Vector3.Lerp(Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].WeaponOffsetPosition, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].SprintWeaponOffsetPosition, sprintingAnimation);
+        Quaternion WeaponOffsetRotation = Quaternion.Lerp(Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].WeaponOffsetRotation, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].SprintWeaponOffsetRotation, sprintingAnimation);
 
         camShake = Vector3.Lerp(camShake, Vector3.zero, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
         smoothCamShake = Vector3.Lerp(smoothCamShake, camShake, Mathf.Clamp(camShakeDamping*(Time.deltaTime*60), 0f, 1f));
@@ -243,15 +320,35 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         WeaponHolder.transform.rotation *= quaternion.Euler(-smoothRecoil*0.825f + smoothRecoil2*0.4f, SmoothDeltaX*1.5f - switchingAnimation*2f, 0)*WeaponOffsetRotation;
     }
 
+    IEnumerator ReloadFinish(int currentReloadID, int missingAmmo)
+    {
+        // simple reload delay (in seconds)
+        float reloadTime = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].reloadDuration;
+        yield return new WaitForSeconds(reloadTime);
+        if (currentReloadID == reloadID && reloading == true)
+        {
+            Inventory.Items[CurrentWeapon].Ammo += missingAmmo;
+            Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo -= missingAmmo;
+            reloading = false;
+        }
+    }
+
     void FixedUpdate()
     {
 //weapon fire
         if (Input.GetMouseButton(0))
         {
             sprinting = false;
-            if (Time.time - (60/Arsenal.Items[CurrentWeapon].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0)
+            if (Time.time - (60/Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireRate) > lastFire && firing == false && sprintingAnimation < 0.5f && switchingAnimation == 0 && Inventory.Items[CurrentWeapon].Ammo > 0)
             {
-                if (Arsenal.Items[CurrentWeapon].fireMode != "full")
+                if (reloading == true)
+                {
+                    reloading = false;
+                    reloadID += 1;
+                }
+                
+
+                if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireMode != "full")
                 {
                     firing = true;
                 }
@@ -263,9 +360,25 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     bool createImpactEffect = true;
                     if (hit.transform.gameObject.tag == "Enemy")
                     {
-                        hit.transform.gameObject.GetComponent<EnemyMovement>().Health -= Arsenal.Items[CurrentWeapon].damage;
-                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().Health < 0)
+                        hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
+                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
                         {
+                            if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
+                            {
+                                if (hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length > 0)
+                                {
+                                    GameObject itemDrop = hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops[UnityEngine.Random.Range(0, hit.transform.gameObject.GetComponent<EnemyMovement>().itemDrops.Length)];
+                                    
+                                    GameObject newItem = Instantiate(
+                                        itemDrop,
+                                        hit.transform.gameObject.transform.position,
+                                        Quaternion.identity
+                                    );
+                                    newItem.GetComponent<Rigidbody>().AddForce(0,70,0);
+                                }
+                            }
+
+                            WaveSystem.currentAliveEnemies -= 1;
                             Destroy(hit.transform.gameObject);
                             createImpactEffect = false;
                         }
@@ -283,7 +396,8 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     }
                 }
 
-                Recoil = (Recoil*0.75f) + Arsenal.Items[CurrentWeapon].recoil;
+                Recoil = (Recoil*0.75f) + Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].recoil;
+                Inventory.Items[CurrentWeapon].Ammo -= 1;
             }
         }
         else
