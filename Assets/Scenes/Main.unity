@@ -791,7 +791,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Player
   Camera: {fileID: 330585545}
   Arsenal: {fileID: 1363291216}
-  GenericBulletImpact: {fileID: 2721504643316295877, guid: 28389f5d64a5d4043aa6c2e8979501b0, type: 3}
+  Inventory: {fileID: 0}
+  WaveSystem: {fileID: 0}
+  BulletImpact: []
+  healthImage: {fileID: 0}
+  WeaponUIText: {fileID: 0}
+  WaveText1: {fileID: 0}
+  WaveText2: {fileID: 0}
+  reloadBar: {fileID: 0}
   Health: 100
   Sensitivity: 2
   WalkSpeed: 30
@@ -1096,30 +1103,39 @@ MonoBehaviour:
   Items:
   - name: Weapon1
     weaponType: melee
+    ammoType: 0
     fireMode: 
     fireRate: 150
+    magSize: 0
     recoil: 0
     damage: 50
+    reloadDuration: 0
     WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon2
     weaponType: gun
+    ammoType: 1
     fireMode: semi
     fireRate: 500
+    magSize: 10
     recoil: 0.75
     damage: 60
+    reloadDuration: 0.5
     WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: Weapon3
     weaponType: gun
+    ammoType: 2
     fireMode: full
     fireRate: 800
+    magSize: 30
     recoil: 0.5
     damage: 70
+    reloadDuration: 0.5
     WeaponOffsetPosition: {x: 0.5, y: -0.5, z: 1}
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
@@ -1428,6 +1444,75 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 1390967401}
   m_SourcePrefab: {fileID: 100100000, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
+--- !u!1001 &1688393939
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.50105065
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.50105065
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.50105065
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -138.2
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -9.5671
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
+      propertyPath: m_Name
+      value: M4.BO.blockout.envirornment
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6553a94b2a35fd54b94f37f74e7b181f, type: 3}
 --- !u!114 &1789921731
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1440,13 +1525,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cd6b183eb1f57549820a120835ad8e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cubePrefab: {fileID: 285323658198991177, guid: 39e2aca2bdc71394798735a7af194a46, type: 3}
+  Enemies: []
   spawnPoint:
   - {fileID: 2094019907}
   - {fileID: 367863714}
   - {fileID: 957980186}
-  cubesPerWave: 5
+  waveAmount: 5
+  EnemiesPerWave: 5
+  extraEnemiesPerWave: 2
   timeBetweenWaves: 3
+  currentWave: 0
+  currentAliveEnemies: 0
+  waveStartTime: 0
+  levelEnding: 0
 --- !u!1 &1841444778 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7146521406498821007, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
@@ -1810,3 +1901,4 @@ SceneRoots:
   - {fileID: 1611765723}
   - {fileID: 1396067968}
   - {fileID: 4790066406395034012}
+  - {fileID: 1688393939}
