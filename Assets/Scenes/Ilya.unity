@@ -1099,6 +1099,7 @@ MonoBehaviour:
   WeaponPrefab: {fileID: 0}
   weaponSwitchSpeed: 0.05
   recoilSpeed: 0.125
+  weaponFireRaycastBackwardsOffset: 1
   weaponShakeDamping: 0.175
   weaponWobbleIntensity: 0.04
   weaponLowerIntensity: 0.1
@@ -1791,7 +1792,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Arsenal
   Items:
-  - name: Weapon1
+  - name: Mjolnir
     Prefab: {fileID: 858363305225413659, guid: a8a05be70701f004694ca0cb660418e9, type: 3}
     weaponType: melee
     ammoType: 0
@@ -1808,7 +1809,7 @@ MonoBehaviour:
     WeaponOffsetRotation: {x: -0.08647815, y: -0.011156469, z: -0.1567296, w: 0.983785}
     SprintWeaponOffsetPosition: {x: -0.37, y: -1.5, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
-  - name: Weapon2
+  - name: pistol
     Prefab: {fileID: 0}
     weaponType: gun
     ammoType: 1
@@ -1825,7 +1826,7 @@ MonoBehaviour:
     WeaponOffsetRotation: {x: 0, y: 0, z: 0, w: 1}
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
-  - name: Weapon3
+  - name: smg
     Prefab: {fileID: 0}
     weaponType: gun
     ammoType: 2
@@ -2606,6 +2607,7 @@ MonoBehaviour:
   Enemies:
   - {fileID: 285323658198991177, guid: 39e2aca2bdc71394798735a7af194a46, type: 3}
   - {fileID: 285323658198991177, guid: fe997987a41cc52418519d167530b434, type: 3}
+  - {fileID: 285323658198991177, guid: d62f6e14e300c2448b858a112bc77f7c, type: 3}
   spawnPoint:
   - {fileID: 2094019907}
   - {fileID: 367863714}

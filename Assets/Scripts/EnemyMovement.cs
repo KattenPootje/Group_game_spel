@@ -12,6 +12,7 @@ public class EnemyMovement : MonoBehaviour
 
     public GameObject[] itemDrops;
     public float itemDropChance = 0.25f;
+    public GameObject deathParticles;
 
 
     private float LastAttack = 0f;

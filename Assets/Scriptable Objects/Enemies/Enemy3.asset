@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Enemies
   Name: Enemy3
   Health: 200
-  MovementSpeed: 2
-  AttackRange: 1.2
+  MovementSpeed: 1.65
+  AttackRange: 1.26
   AttackCooldown: 2
   AttackDamage: 7.5
