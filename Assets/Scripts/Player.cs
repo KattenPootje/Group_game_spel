@@ -51,6 +51,20 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private float reloadStart = 0f;
     private int reloadID = 0;
     private bool reloading = false;
+    private float fireStart = 0;
+    private bool fired = false;
+    private KeyCode[] keyCodes = {
+		KeyCode.Alpha1,
+		KeyCode.Alpha2,
+		KeyCode.Alpha3,
+		KeyCode.Alpha4,
+		KeyCode.Alpha5,
+		KeyCode.Alpha6,
+		KeyCode.Alpha7,
+		KeyCode.Alpha8,
+		KeyCode.Alpha9,
+	};
+    
 
     [Header("Player")]
     public float Health = 100f;
@@ -74,6 +88,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public Transform WeaponHolder;
     public float weaponSwitchSpeed = 0.05f;
     public float recoilSpeed = 0.06f;
+    public float weaponFireRaycastBackwardsOffset = 1;
     public float weaponShakeDamping = 0.15f;
     public float weaponWobbleIntensity = 0.04f;
     public float weaponLowerIntensity = 0.2f;
@@ -83,7 +98,28 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     public Quaternion DefaultSprintWeaponOffsetRotation = Quaternion.Euler(0f, 45f, 35f);
 
 
-    
+    void Reload()
+    {
+        if (Inventory.Items[CurrentWeapon].Ammo < Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize && reloading == false)
+        {
+            int missingAmmo = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize- Inventory.Items[CurrentWeapon].Ammo;
+            if (missingAmmo > Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo)
+            {
+                missingAmmo = Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
+            }
+            if (missingAmmo > 0)
+            {
+                reloading = true;
+                reloadStart = Time.time;
+
+                reloadID += 1;
+                int currentReloadID = reloadID;
+
+                StartCoroutine(ReloadFinish(currentReloadID, missingAmmo));
+
+            }
+        }
+    }
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -145,7 +181,22 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
             }
             switchTo = clamped;
         }
+        //switch using keyboard
+        for(int i = 0 ; i < keyCodes.Length; i ++ )
+        {
+            if(Input.GetKeyDown(keyCodes[i]))
+            {
+                switchTo = i;
+                int clamped = Mathf.Clamp(switchTo, 0, Inventory.Items.Length-1);
+                if (switchTo == clamped)
+                {
+                    switchingWeapon = true;
+                }
+                switchTo = clamped;
+            }
         
+        }
+
         if (switchingWeapon == true)
         {
             if (switchTo == CurrentWeapon)
@@ -237,25 +288,11 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 //reload
         if (Input.GetKeyDown(KeyCode.R))
         {
-            if (Inventory.Items[CurrentWeapon].Ammo < Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize && reloading == false)
-            {
-                int missingAmmo = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize- Inventory.Items[CurrentWeapon].Ammo;
-                if (missingAmmo > Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo)
-                {
-                    missingAmmo = Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
-                }
-                if (missingAmmo > 0)
-                {
-                    reloading = true;
-                    reloadStart = Time.time;
-
-                    reloadID += 1;
-                    int currentReloadID = reloadID;
-
-                    StartCoroutine(ReloadFinish(currentReloadID, missingAmmo));
-
-                }
-            }
+            Reload();
+        }
+        if (Inventory.Items[CurrentWeapon].Ammo == 0 && Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize > 0 && Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo > 0 && Time.time - 0.2 > lastFire)
+        {
+            Reload();
         }
 
 
@@ -271,7 +308,14 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
 
 //UI
         healthImage.fillAmount = Health / 100f;
-        WeaponUIText.text = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].name + " - " + Inventory.Items[CurrentWeapon].Ammo + " / " + Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
+        if (Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].magSize > 0)
+        {
+            WeaponUIText.text = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].name + " - " + Inventory.Items[CurrentWeapon].Ammo + " / " + Inventory.ReserveAmmo[Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].ammoType].Ammo;
+        }
+        else
+        {
+            WeaponUIText.text = Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].name;
+        }
         if (reloading == true)
         {
             reloadBar.fillAmount = (Time.time-reloadStart)/Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].reloadDuration;
@@ -363,9 +407,36 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                     int impactType = 0;
                     if (hit.transform.gameObject.tag == "Enemy")
                     {
-                        impactType = 1;
-                        hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
-                        if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
+                        animator.SetTrigger("Fire");
+                    }
+                }
+
+            }
+        }
+        else
+        {
+            firing = false;
+        }
+
+        if (Time.time - Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireDelay > fireStart && fired == false)
+        {
+            fired = true;
+            if (Physics.Raycast(Camera.transform.position + (Camera.transform.TransformDirection(Vector3.forward)*weaponFireRaycastBackwardsOffset), Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].range-weaponFireRaycastBackwardsOffset, ~LayerMask.GetMask("Player")))
+            {
+                bool createImpactEffect = true;
+                bool parentToPart = true;
+                int impactType = 0;
+                if (hit.transform.gameObject.tag == "Enemy")
+                {
+                    impactType = 1;
+                    Vector3 dist = hit.transform.position-transform.position;
+                    dist = new Vector3(dist.x,0,dist.z);
+                    hit.transform.GetComponent<Rigidbody>().linearVelocity += (dist.normalized + new Vector3(0,1,0))*Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damageKnockback;
+                    hit.transform.gameObject.GetComponent<EnemyMovement>().health -= Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].damage;
+                    if (hit.transform.gameObject.GetComponent<EnemyMovement>().health < 0)
+                    {
+                        parentToPart = false;
+                        if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
                         {
                             parentToPart = false;
                             if ((float)UnityEngine.Random.Range(0,100)/100 < hit.transform.gameObject.GetComponent<EnemyMovement>().itemDropChance)
@@ -382,6 +453,11 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                                     newItem.GetComponent<Rigidbody>().AddForce(0,70,0);
                                 }
                             }
+                        }
+                        GameObject deathEffect = Instantiate(hit.transform.gameObject.GetComponent<EnemyMovement>().deathParticles, hit.transform.position, Quaternion.LookRotation(hit.normal));
+                        ParticleSystem ps = deathEffect.GetComponent<ParticleSystem>();
+                        ps.Emit(15);
+                        
 
                             WaveSystem.currentAliveEnemies -= 1;
                             Destroy(hit.transform.gameObject);
