@@ -1099,7 +1099,7 @@ MonoBehaviour:
   WeaponPrefab: {fileID: 0}
   weaponSwitchSpeed: 0.05
   recoilSpeed: 0.125
-  weaponFireRaycastBackwardsOffset: 1
+  weaponFireRaycastBackwardsOffset: 0
   weaponShakeDamping: 0.175
   weaponWobbleIntensity: 0.04
   weaponLowerIntensity: 0.1
