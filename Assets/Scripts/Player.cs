@@ -53,6 +53,18 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
     private bool reloading = false;
     private float fireStart = 0;
     private bool fired = false;
+    private KeyCode[] keyCodes = {
+		KeyCode.Alpha1,
+		KeyCode.Alpha2,
+		KeyCode.Alpha3,
+		KeyCode.Alpha4,
+		KeyCode.Alpha5,
+		KeyCode.Alpha6,
+		KeyCode.Alpha7,
+		KeyCode.Alpha8,
+		KeyCode.Alpha9,
+	};
+
     
 
     [Header("Player")]
@@ -154,6 +166,20 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                 switchingWeapon = true;
             }
             switchTo = clamped;
+        }
+        //switching using keyboard
+        for(int i = 0 ; i < keyCodes.Length; i ++ )
+        {
+            if(Input.GetKeyDown(keyCodes[i]))
+            {
+                switchTo = i;
+                int clamped = Mathf.Clamp(switchTo, 0, Inventory.Items.Length-1);
+                if (switchTo == clamped)
+                {
+                    switchingWeapon = true;
+                }
+                switchTo = clamped;
+            }
         }
         
         if (switchingWeapon == true)
