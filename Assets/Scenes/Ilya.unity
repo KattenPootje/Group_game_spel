@@ -1806,7 +1806,7 @@ MonoBehaviour:
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: pistol
-    Prefab: {fileID: 0}
+    Prefab: {fileID: 3841839825531705936, guid: 76c58e8e72d956641890d6b89ba8850f, type: 3}
     weaponType: gun
     ammoType: 1
     fireMode: semi
@@ -1820,7 +1820,7 @@ MonoBehaviour:
     SprintWeaponOffsetPosition: {x: 0.15, y: -0.7, z: 1}
     SprintWeaponOffsetRotation: {x: 0.099045776, y: 0.36964387, z: -0.23911761, w: -0.8923991}
   - name: smg
-    Prefab: {fileID: 0}
+    Prefab: {fileID: 3841839825531705936, guid: 76c58e8e72d956641890d6b89ba8850f, type: 3}
     weaponType: gun
     ammoType: 2
     fireMode: full
@@ -2704,7 +2704,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1929570054}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1

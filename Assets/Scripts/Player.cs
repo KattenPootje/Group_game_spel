@@ -421,7 +421,7 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
         if (Time.time - Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].fireDelay > fireStart && fired == false)
         {
             fired = true;
-            if (Physics.Raycast(Camera.transform.position + (Camera.transform.TransformDirection(Vector3.forward)*weaponFireRaycastBackwardsOffset), Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].range-weaponFireRaycastBackwardsOffset, ~LayerMask.GetMask("Player")))
+            if (Physics.Raycast(Camera.transform.position - (Camera.transform.forward*weaponFireRaycastBackwardsOffset), Camera.transform.TransformDirection(Vector3.forward), out RaycastHit hit, Arsenal.Items[Inventory.Items[CurrentWeapon].itemNumber].range+weaponFireRaycastBackwardsOffset, ~LayerMask.GetMask("Player")))
             {
                 bool createImpactEffect = true;
                 bool parentToPart = true;
