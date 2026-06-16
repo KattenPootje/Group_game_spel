@@ -8,6 +8,7 @@ public class WaveSystem : MonoBehaviour
 
     [Header("Spawn")]
     public Transform[] spawnPoint;
+    public GroundElevator groundElevator;
 
     [Header("Wave Settings")]
     public int waveAmount = 5;
@@ -18,6 +19,7 @@ public class WaveSystem : MonoBehaviour
     public int currentAliveEnemies = 0;
     public float waveStartTime = 0f;
     public bool levelEnding = false;
+    public int CurrentLevel = 1;
 
     void Start()
     {
@@ -40,10 +42,17 @@ public class WaveSystem : MonoBehaviour
                 yield return new WaitForSeconds(0.1f);
             }
 
-            if (currentWave == waveAmount)
+            if (currentWave >= waveAmount*CurrentLevel)
             {
+
                 levelEnding = true;
-                break;
+                groundElevator.isAtNewLevel = false;
+                while (groundElevator.isAtNewLevel == false)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                }
+                CurrentLevel ++;
+                levelEnding = false;
             }
         }
     }
