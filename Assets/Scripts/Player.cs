@@ -459,10 +459,9 @@ public class Player : MonoBehaviour // kut kjelt blijf uit me kanker code
                         ps.Emit(15);
                         
 
-                            WaveSystem.currentAliveEnemies -= 1;
-                            Destroy(hit.transform.gameObject);
-                            createImpactEffect = false;
-                        }
+                        WaveSystem.currentAliveEnemies -= 1;
+                        Destroy(hit.transform.gameObject);
+                        createImpactEffect = false;
                     }
                     
                     //hit.transform.

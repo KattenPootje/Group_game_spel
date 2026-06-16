@@ -1098,7 +1098,7 @@ MonoBehaviour:
   WeaponHolder: {fileID: 1929570055}
   weaponSwitchSpeed: 0.05
   recoilSpeed: 0.125
-  weaponFireRaycastBackwardsOffset: 1
+  weaponFireRaycastBackwardsOffset: 0
   weaponShakeDamping: 0.175
   weaponWobbleIntensity: 0.04
   weaponLowerIntensity: 0.1
@@ -2438,6 +2438,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: -5568371526223589888, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1987803189}
+    - targetCorrespondingSourceObject: {fileID: -5568371526223589888, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1987803193}
     - targetCorrespondingSourceObject: {fileID: 8513859187771203891, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
       insertIndex: -1
       addedObject: {fileID: 607742239}
@@ -2602,6 +2605,7 @@ MonoBehaviour:
   - {fileID: 2094019907}
   - {fileID: 367863714}
   - {fileID: 957980186}
+  groundElevator: {fileID: 1987803193}
   waveAmount: 5
   EnemiesPerWave: 5
   extraEnemiesPerWave: 2
@@ -2610,6 +2614,7 @@ MonoBehaviour:
   currentAliveEnemies: 0
   waveStartTime: 0
   levelEnding: 0
+  CurrentLevel: 1
 --- !u!1 &1841444778 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7146521406498821007, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
@@ -2901,6 +2906,21 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 2534964839176971238, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
+--- !u!114 &1987803193
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1987803187}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b463bc9574aad74489527061bd5f2a4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GroundElevator
+  waveSystem: {fileID: 1789921731}
+  ElevatorSpeed: 2
+  isAtNewLevel: 1
 --- !u!1 &2048567715 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -466329591000292508, guid: 4d0e5b8b3b789b442892b949ab5b75ac, type: 3}
